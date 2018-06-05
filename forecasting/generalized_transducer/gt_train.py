@@ -2,12 +2,12 @@ import tensorflow as tf
 import numpy as np
 from time import time as timer
 
-from utils import DataSlicer
+# from utils import DataSlicer
 
 
-def acceptor_step(
+def transducer_step(
     sess,
-    acceptor, 
+    transducer, 
     x,
     y,
     seqlen,
@@ -17,16 +17,16 @@ def acceptor_step(
     """
     One step for either update or predict
     :param sess: TensorFlow session
-    :param acceptor: acceptor instance
+    :param transducer: transducer instance
     :param x: input data
     :param y: targets
     :param training: boolean. true is training, false is validation or prediction
     :return: preds, loss, final_state
     """
-    # if it is now training the acceptor, update the network, or predict with the network
+    # if it is now training the transducer, update the network, or predict with the network
     if training:
-        # update the acceptor with one gradient decent step
-        preds, loss, final_state, learning_rate = acceptor.update(
+        # update the transducer with one gradient decent step
+        preds, loss, final_state, learning_rate = transducer.update(
             sess=sess, 
             x=x, 
             y=y, 
@@ -34,8 +34,8 @@ def acceptor_step(
             init_state=init_state
         )
     else:
-        # predict with the acceptor
-        preds, final_state = acceptor.predict(
+        # predict with the transducer
+        preds, final_state = transducer.predict(
             sess=sess,
             x=x,
             y=y,
@@ -50,34 +50,27 @@ def acceptor_step(
     return preds, loss, final_state
 
 
-def acceptor_epoch(
+def transducer_epoch(
     sess,
-    acceptor,
+    transducer,
     data_generator,
     rnn_structure,
-    input_length, 
-    y_dim, 
-    x_dim,
     t_timer,
-    stateful=True,
     training=True
 ):
     """
     One epoch for either training or validation
     :param sess: TensorFlow session
-    :param acceptor: acceptor instance
+    :param transducer: transducer instance
     :param data_generator: iterator for generating batches
-    :param input_length: number of look back steps used for future prediction 
-    :param y_dim: targets dismension
-    :param x_dim: inputs dimension
     :param t_timer: in case running time is too long
     :param training: boolean. true is training, false is validation or prediction
     :return: averaged_loss for the epoch
     """
     # one epoch for either training or prediction
     num_layers = len(rnn_structure)
-    total_loss = 0
-    total_samples = 0
+    training_loss = 0
+    validation_loss = 0
 
     # Batch Generator returns a tuple of (data, sequence length, keys, current size)
     # data: np 3-D array [record, time, feature]
@@ -90,87 +83,54 @@ def acceptor_epoch(
             print("Training timeout during batching at epoch:", epoch)
             break
 
-            init_state = np.zeros((num_layers, 2, current_size, max(i[0] for i in rnn_structure)))
-            # initialize data slicer, iterator for slicing each batch to fit the acceptor network
-            data_slicer = DataSlicer(batch, seqlen, input_length, y_dim, x_dim, random=random_slice)
+        # transducer state initialization, "stateful" only make sense for acceptor
+        init_state = np.zeros((num_layers, 2, current_size, max(i[0] for i in rnn_structure)))
 
-            # steps within a batch
-            for x, y, x_length in data_slicer:
-                if timer() - t_timer > time_limit:
-                    timeout = True
-                    print("Training timeout during slicing at epoch:", epoch)
-                    break
+        # one step
+        preds, loss, final_state = transducer_step(
+            sess=sess, 
+            transducer=transducer, 
+            x=x, 
+            y=y, 
+            seqlen=seqlen, 
+            init_state=init_state, 
+            training=training
+        )
 
-                num_effective_sample = (x_length > 0).sum()
-                total_samples += num_effective_sample
-
-                # take one step and calculate loss
-                preds, loss, final_state = acceptor_step(
-                    sess=sess, 
-                    acceptor=acceptor, 
-                    x=x, 
-                    y=y, 
-                    seqlen=x_length, 
-                    init_state=init_state, 
-                    training=training
-                )
-
-                # accumulate training loss
-                if training:
-                    total_loss += loss * num_effective_sample
-                else:
-                    total_loss += loss
-
-                # initial state for the next GD update step
-                init_state = np.zeros((num_layers, 2, current_size, max(i[0] for i in rnn_structure)))
-
-                # if the rnn is stateful the initial state for the next training step should be the final state of the current training step
-                if stateful:
-                    for i in range(len(final_state)):
-                        c = final_state[i][0]  # LSTM cell state
-                        h = final_state[i][1]  # LSTM hidden state
-                        n_row, n_col = c.shape
-                        init_state[i][0][:nrow, :ncol] = c
-                        init_state[i][1][:nrow, :ncol] = h
+        # accumulate losses
+        total_loss += loss
 
     # if training is stopped due to timeout
     if timeout:
         # TODO: raise timeout exception
         raise Exception("Timeout!")
-    return total_loss, total_samples
+    return total_loss
 
 
-def acceptor_train(
+def transducer_train(
     sess,
-    acceptor, 
+    transducer, 
     data_generator,
     num_epochs, 
     rnn_structure,
-    input_length, 
-    y_dim, 
-    x_dim,
     valid_data_generator=None,
     verbose=True,  
     time_limit=float("Inf"),
-    stateful=True,
-    random_slice=True
 ):
     """
-    Train the acceptor
+    Train the transducer
     :param sess: TensorFlow session
-    :param acceptor: acceptor instance
+    :param transducer: transducer instance
     :param data_generator: iterator for generating batches
-    :param data_slicer: iterator for slicing each batch to fit the acceptor network
+    :param data_slicer: iterator for slicing each batch to fit the transducer network
     :param num_epochs: number of epochs to run for training the network
-    :param rnn_structure: define the structure of the acceptor. list of state tuples. Each tuple is a combinator of state size and drop out keep rate.[(9, .9), (20, .7)] means two stacked layers of 9 hidden units in first layer with 0.9 dropout KEEP rate and 20 units in second layer of 0.7 dropout KEEP rate.
-    :param input_length: number of look back steps used for future prediction 
-    :param y_dim: targets dismension
-    :param x_dim: inputs dimension
+    :param rnn_structure: define the structure of the transducer. 
+        list of state tuples. Each tuple is a combinator of state size and drop out 
+        keep rate.[(9, .9), (20, .7)] means two stacked layers of 9 hidden units in 
+        first layer with 0.9 dropout KEEP rate and 20 units in second layer of 0.7 dropout KEEP rate.
     :param valid_data_generator: iterator for generating validation batches
     :param verbose: for debug and monitor purpose
     :param time_limit: in case running time is too long
-    :param stateful: boolean indicating a stateful acceptor or not
-    :param random_slice: boolean indication random slice the batches or not
     :return: training_losses, validation_losses
     """
     # training statistics 
@@ -194,13 +154,12 @@ def acceptor_train(
             break
 
         # take one epoch
-        averaged_loss = acceptor_epoch(
+        averaged_loss = transducer_epoch(
             sess=sess,
-            acceptor=acceptor,
+            transducer=transducer,
             data_generator=data_generator,
             rnn_structure=rnn_structure,
             t_timer=t_timer,
-            stateful=stateful,
             training=True
         )
 
@@ -213,13 +172,12 @@ def acceptor_train(
 
         # if there are data for validation
         if valid_data_generator:
-            averaged_valid_loss = acceptor_epoch(
+            averaged_valid_loss = transducer_epoch(
                 sess=sess,
-                acceptor=acceptor,
+                transducer=transducer,
                 data_generator=valid_data_generator,
                 rnn_structure=rnn_structure,
                 t_timer=t_timer,
-                stateful=stateful,
                 training=False
             )
             # training statistics

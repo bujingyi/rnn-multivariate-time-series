@@ -6,13 +6,14 @@ import tensorflow as tf
 import numpy as np
 from time import time as timer
 
-from acceptor_model import Acceptor
+from transducer_model import GeneralizedTransducer
 from forecasting.utils import DataGenerator
 
 # global variables
 X_DIM = 0
 Y_DIM = 0
-INPUT_LENGTH = 40  # input length to predict the future
+DROP_X = 5
+DROP_Y = 5
 EPOCH_MAX = 10000
 
 # main function
@@ -34,35 +35,32 @@ if __name__ == '__main__':
 		totalData=None
 	)
 
-	# TODO: define acceptor structure, rnn_structure is a list of tuple, see model
+	# TODO: define transducer structure, rnn_structure is a list of tuple, see model
 	rnn_structure = None
 
-	# create acceptor
-	acceptor = Acceptor(
+	# create transducer
+	transducer = GeneralizedTransducer(
         x_dim=X_DIM,
         y_dim=Y_DIM,
         rnn_structure=rnn_structure,
-        scope='Acceptor',
+        drop_x_head=DROP_X,
+        drop_y_head=DROP_Y,
+        scope='Generalized_Transducer',
         initial_learning_rate=1e-4,
         decay_steps=10000,
         decay_rate=0.9,
-        summaries_dir=None
+        summaries_dir=None, 
 	)
 
 	with tf.Session(config=config) as sess:
 		sess.run(tf.global_variables_initializer())
-		training_losses, validation_losses = acceptor_train(
+		training_losses, validation_losses = transducer_train(
 		    sess=sess,
-		    acceptor=acceptor, 
+		    transducer=transducer, 
 		    data_generator=data_generator,
 		    num_epochs=EPOCH_MAX, 
 		    rnn_structure=rnn_structure,
-		    input_length=INPUT_LENGTH, 
-		    y_dim=Y_DIM, 
-		    x_dim=X_DIM,
 		    valid_data_generator=None,
 		    verbose=True,  
-		    time_limit=float("Inf"),
-		    stateful=True,
-		    random_slice=True
+		    time_limit=float("Inf")
 		)
