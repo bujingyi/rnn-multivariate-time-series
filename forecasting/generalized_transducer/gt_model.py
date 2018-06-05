@@ -5,7 +5,7 @@ import os
 class GeneralizedTransducer:
     """
     Generalized RNN transducer architecture for multivariante time series forcasting.
-    Classic transducer and acceptor could be regarded as two special cases of GT.
+    Classic transducer and transducer could be regarded as two special cases of GT.
     """
     def __init__(
         self, 
@@ -24,7 +24,7 @@ class GeneralizedTransducer:
     Transducer initializer
     :param x_dim: input feature x dimension
     :param y_dim: input feature y dimension
-    :param rnn_structure: define the structure of the acceptor. list of state tuples. 
+    :param rnn_structure: define the structure of the transducer. list of state tuples. 
         Each tuple is a combinator of state size and drop out keep rate.[(9, .9), (20, .7)] 
         means two stacked layers of 9 hidden units in first layer with 0.9 dropout KEEP rate 
         and 20 units in second layer of 0.7 dropout KEEP rate.
@@ -149,7 +149,7 @@ class GeneralizedTransducer:
 
     def update(self, sess, x, y, seqlen, init_state):
         """
-        Updates the acceptor towards the given targets
+        Updates the transducer towards the given targets
         :param sess: TensorFlow session
         :param x: input x of shape [batch_size, known_length]
         :param y: targets to predict of shape[batch_size, pred_length]
@@ -182,7 +182,7 @@ class GeneralizedTransducer:
 
     def predict(self, sess, x, y, seqlen, init_state):
         """
-        Updates the acceptor towards the given targets
+        Updates the transducer towards the given targets
         :param sess: TensorFlow session
         :param x: input x of shape [batch_size, known_length]
         :param y: targets to predict of shape[batch_size, pred_length]

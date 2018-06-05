@@ -1,4 +1,4 @@
-# rnn_multivariate_time_series
+# RNN Multivariate Time Series Forecasting
 Processing multivariate time series by RNN with Tensorflow
 
 Two frameworks including:
