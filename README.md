@@ -1,7 +1,7 @@
-# RNN Multivariate Time Series Forecasting
+# RNN Multivariate Time Series Processing
 Processing multivariate time series by RNN with Tensorflow
 
-Two frameworks including:
+Three frameworks including:
 1. acceptor
 2. generalized transducer (GT)
 3. encoder-decoder
