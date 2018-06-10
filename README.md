@@ -24,7 +24,7 @@ An Acceptor bases the supervision sequence only on the final output vector on wh
  </div>
 
 ### Transducer
-A transducer products an output for each input point it reads in. So the loss is defined as the sum of local losses that is calculated from the divergence between the predict and the target of each point. A Transducer maps one sequence into another which may be interpreted as a conditional probability of one sequence given another one. For example, consider training an RNN to predect the next value of each point in a whole sequence.
+A Transducer products an output for each input point it reads in. So the loss is defined as the sum of local losses that is calculated from the divergence between the predict and the target of each point. A Transducer maps one sequence into another which may be interpreted as a conditional probability of one sequence given another one. For example, consider training an RNN to predect the next value of each point in a whole sequence.
 <div align="center">
 <img src="https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/transducer.png" height="70%" width="70%" >
  </div>
