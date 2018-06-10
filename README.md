@@ -22,7 +22,7 @@ An Acceptor bases the supervision sequence only on the final output vector on wh
 <!-- ![Acceptor](https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/acceptor.png) -->
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/acceptor.png" height="330" width="190" >
+<img src="https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/acceptor.png" height="70%" width="70%" >
  </div>
 
 ### Transducer
