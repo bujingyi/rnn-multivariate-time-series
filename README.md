@@ -2,12 +2,12 @@
 Processing multivariate time series by RNN with Tensorflow
 
 Three frameworks including:
-1. acceptor
-2. generalized transducer (GT)
-3. encoder-decoder
+1. Acceptor
+2. Generalized Transducer (GT)
+3. Encoder-Decoder
 
 solving below problems:
-1. forecasting
-2. embeding
+1. forecasting (Acceptor, GT)
+2. embeding (GT, Encoder-Decoder)
 
-Classic transducer and acceptor could be regarded as two special cases of GT. Both of them could be used for forecasting. GT and encoder-decoder can fulfill the requirement of embeding.
+The concept of the frameworks were borrowed from Natural Language Processing. An Acceptor maps a sequence into a scalar (which may be a probability, for example). A transducer maps a pair of sequences into a scalar (which may be interpreted as a conditional probability of one sequence given another one). Classic transducer and acceptor could be regarded as two special cases of GT.
