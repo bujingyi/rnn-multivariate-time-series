@@ -16,11 +16,14 @@ RNN is unrolled as figure shown below. To train an RNN network, we firstly creat
 
 ![RNN unrolled](https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/rnn_unrolled.png)
 
-
 ### Acceptor
 An Acceptor bases the supervision sequence only on the final output vector on which an outcome is decided. It maps a sequence into a scalar or a vector which may be interpreted as a conditional probability of one vector given one sequence. For example, an RNN is trained to read 40 points from a multivariate series and then use the final state to predict the vector of 41 points. The loss in such cases is defined as the divergence between the predict vector and the target vector. The loss can take various forms such as squared error, or even cosin similarity. 
 
-![Acceptor](https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/acceptor.png)
+<!-- ![Acceptor](https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/acceptor.png) -->
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/bujingyi/rnn-multivariate-time-series/master/image_markdown/acceptor.png" height="330" width="190" >
+ </div>
 
 ### Transducer
 A transducer products an output for each input point it reads in. So the loss is defined as the sum of local losses that is calculated from the divergence between the predict and the target of each point. A Transducer maps one sequence into another which may be interpreted as a conditional probability of one sequence given another one. For example, consider training an RNN to predect the next value of each point in a whole sequence.
