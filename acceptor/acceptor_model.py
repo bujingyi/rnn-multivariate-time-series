@@ -111,9 +111,9 @@ class Acceptor:
         # lastOutput: [batch size, time:1, state size]
         lastOutput = tf.reshape(lastOutput, (batch_size, last_state_size)) # lastOutput: [batch_size, state_size]
 
-        with tf.variable_scope('Prediction'):
-        hiddens = tf.matmul(lastOutput, Wh) + bh
-        self.preds = tf.matmul(hiddens, W) + b  # preds: [batch size, x_dim]
+        with tf.name_scope('Prediction'):
+            hiddens = tf.matmul(lastOutput, Wh) + bh
+            self.preds = tf.matmul(hiddens, W) + b  # preds: [batch size, x_dim]
 
         # loss is defined as avg across all features for all samples in batch 
         # excluding those padded too much with 0
@@ -121,13 +121,13 @@ class Acceptor:
 
         # training with gradient descent, global variables
         with tf.name_scope('Global'):
-        global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
-        self.learning_rate = tf.train.exponential_decay(
-            learning_rate=self.initial_learning_rate,
-            global_step=global_step,
-            decay_steps=self.decay_steps,
-            decay_rate=self.decay_rate
-        )
+            global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
+            self.learning_rate = tf.train.exponential_decay(
+                learning_rate=self.initial_learning_rate,
+                global_step=global_step,
+                decay_steps=self.decay_steps,
+                decay_rate=self.decay_rate
+            )
         with tf.name_scope('Loss'):
             self.loss = tf.losses.mean_squared_error(tf.boolean_mask(y, mask), tf.boolean_mask(self.preds, mask))
         with tf.name_scope('Train'):

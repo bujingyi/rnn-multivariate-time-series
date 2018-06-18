@@ -111,7 +111,7 @@ class GeneralizedTransducer:
             b = tf.get_variable('b', [self.y_dim], initializer=tf.constant_initializer(0.0))
 
         # predictions
-        with tf.variable_scope('Prediction'):
+        with tf.name_scope('Prediction'):
             output_reshape = tf.reshape(
                 outputs[:, self.drop_x_head:, :],
                 [current_batch_size * (max_time - self.drop_x_head), last_layer_state_size]
@@ -129,13 +129,13 @@ class GeneralizedTransducer:
 
         # training with gradient descent, global variables
         with tf.name_scope('Global'):
-        global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
-        self.learning_rate = tf.train.exponential_decay(
-            learning_rate=self.initial_learning_rate,
-            global_step=global_step,
-            decay_steps=self.decay_steps,
-            decay_rate=self.decay_rate
-        )
+            global_step = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_step')
+            self.learning_rate = tf.train.exponential_decay(
+                learning_rate=self.initial_learning_rate,
+                global_step=global_step,
+                decay_steps=self.decay_steps,
+                decay_rate=self.decay_rate
+            )
 
         # define train operation
         with tf.name_scope('Train'):
